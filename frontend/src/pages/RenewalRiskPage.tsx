@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, Fragment } from "react";
 import { useParams, Link } from "react-router-dom";
 
 const API_URL = import.meta.env.VITE_API_URL || "http://localhost:3003";
@@ -43,6 +43,12 @@ function RenewalRiskPage() {
   const [triggerStatus, setTriggerStatus] = useState<
     Record<string, "loading" | "success" | "error">
   >({});
+  const [filterTier, setFilterTier] = useState<
+    "all" | "high" | "medium" | "low"
+  >("all");
+  const [expandedResidents, setExpandedResidents] = useState<Set<string>>(
+    new Set(),
+  );
 
   // --- Actions ---
   const calculateRisk = async () => {
@@ -114,6 +120,23 @@ function RenewalRiskPage() {
   };
 
   // --- Helpers ---
+  const toggleExpandResident = (residentId: string) => {
+    setExpandedResidents((prev) => {
+      const next = new Set(prev);
+      if (next.has(residentId)) {
+        next.delete(residentId);
+      } else {
+        next.add(residentId);
+      }
+      return next;
+    });
+  };
+
+  const filteredResidents =
+    data?.residents.filter((r) =>
+      filterTier === "all" ? true : r.riskTier === filterTier,
+    ) || [];
+
   const getTierColor = (tier: string) => {
     switch (tier) {
       case "high":
@@ -201,20 +224,47 @@ function RenewalRiskPage() {
       {/* Data Table */}
       {data && (
         <div className="bg-white rounded-lg border border-gray-200 shadow-sm overflow-hidden">
-          <div className="px-6 py-4 border-b border-gray-200 bg-gray-50 flex justify-between text-sm text-gray-600">
-            <span>
-              Last calculated: {new Date(data.calculatedAt).toLocaleString()}
-            </span>
-            <div className="flex space-x-4">
-              <span className="text-red-600 font-medium">
-                High Risk: {data.riskTiers.high}
+          <div className="px-6 py-4 border-b border-gray-200 bg-gray-50 flex flex-col md:flex-row justify-between items-start md:items-center gap-4 text-sm text-gray-600">
+            <div className="flex flex-col gap-1">
+              <span>
+                Last calculated: {new Date(data.calculatedAt).toLocaleString()}
               </span>
-              <span className="text-yellow-600 font-medium">
-                Medium Risk: {data.riskTiers.medium}
-              </span>
-              <span className="text-green-600 font-medium">
-                Low Risk: {data.riskTiers.low}
-              </span>
+              <div className="flex space-x-4">
+                <span className="text-red-600 font-medium">
+                  High: {data.riskTiers.high}
+                </span>
+                <span className="text-yellow-600 font-medium">
+                  Medium: {data.riskTiers.medium}
+                </span>
+                <span className="text-green-600 font-medium">
+                  Low: {data.riskTiers.low}
+                </span>
+              </div>
+            </div>
+
+            {/* Filter by Risk Button */}
+            <div className="flex items-center gap-2">
+              <label
+                htmlFor="tier-filter"
+                className="font-medium text-gray-700"
+              >
+                Filter by Risk:
+              </label>
+              <select
+                id="tier-filter"
+                value={filterTier}
+                onChange={(e) =>
+                  setFilterTier(
+                    e.target.value as "all" | "high" | "medium" | "low",
+                  )
+                }
+                className="border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+              >
+                <option value="all">All Tiers</option>
+                <option value="high">High Risk</option>
+                <option value="medium">Medium Risk</option>
+                <option value="low">Low Risk</option>
+              </select>
             </div>
           </div>
 
@@ -243,57 +293,181 @@ function RenewalRiskPage() {
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
-                {data.residents.map((resident) => (
-                  <tr key={resident.residentId} className="hover:bg-gray-50">
-                    <td className="px-6 py-4 whitespace-nowrap font-medium text-gray-900">
-                      {resident.name}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-gray-500">
-                      {/* Simplified for display */}
-                      {resident.unitId.substring(0, 8)}...{" "}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-gray-500">
-                      {resident.daysToExpiry} days
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <span className="text-gray-900 font-medium">
-                        {resident.riskScore}
-                      </span>
-                      <span className="text-gray-400 text-xs ml-1">/ 100</span>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <span
-                        className={`px-2.5 py-0.5 rounded-full text-xs font-medium border ${getTierColor(resident.riskTier)}`}
-                      >
-                        {resident.riskTier.toUpperCase()}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                      <button
-                        onClick={() => triggerRenewalEvent(resident)}
-                        disabled={
-                          triggerStatus[resident.residentId] === "loading" ||
-                          triggerStatus[resident.residentId] === "success"
-                        }
-                        className={`text-sm px-3 py-1 rounded transition-colors ${
-                          triggerStatus[resident.residentId] === "success"
-                            ? "bg-green-100 text-green-700"
-                            : triggerStatus[resident.residentId] === "error"
-                              ? "bg-red-100 text-red-700"
-                              : "text-indigo-600 hover:bg-indigo-50 border border-transparent hover:border-indigo-200"
-                        }`}
-                      >
-                        {triggerStatus[resident.residentId] === "loading"
-                          ? "Sending..."
-                          : triggerStatus[resident.residentId] === "success"
-                            ? "✓ Sent"
-                            : triggerStatus[resident.residentId] === "error"
-                              ? "Failed"
-                              : "Trigger RMS"}
-                      </button>
+                {filteredResidents.length === 0 ? (
+                  <tr>
+                    <td
+                      colSpan={6}
+                      className="px-6 py-12 text-center text-gray-500"
+                    >
+                      No residents found matching the "{filterTier}" filter.
                     </td>
                   </tr>
-                ))}
+                ) : (
+                  filteredResidents.map((resident) => (
+                    <Fragment key={resident.residentId}>
+                      <tr
+                        className="hover:bg-gray-50 cursor-pointer"
+                        onClick={() =>
+                          toggleExpandResident(resident.residentId)
+                        }
+                      >
+                        <td className="px-6 py-4 whitespace-nowrap font-medium text-gray-900">
+                          <div className="flex items-center">
+                            <svg
+                              className={`mr-2 h-4 w-4 transition-transform ${
+                                expandedResidents.has(resident.residentId)
+                                  ? "transform rotate-90"
+                                  : ""
+                              }`}
+                              fill="none"
+                              viewBox="0 0 24 24"
+                              stroke="currentColor"
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth={2}
+                                d="M9 5l7 7-7 7"
+                              />
+                            </svg>
+                            {resident.name}
+                          </div>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-gray-500">
+                          {/* Simplified for display */}
+                          {resident.unitId.substring(0, 8)}...{" "}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-gray-500">
+                          {resident.daysToExpiry} days
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <span className="text-gray-900 font-medium">
+                            {resident.riskScore}
+                          </span>
+                          <span className="text-gray-400 text-xs ml-1">
+                            / 100
+                          </span>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <span
+                            className={`px-2.5 py-0.5 rounded-full text-xs font-medium border ${getTierColor(resident.riskTier)}`}
+                          >
+                            {resident.riskTier.toUpperCase()}
+                          </span>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              triggerRenewalEvent(resident);
+                            }}
+                            disabled={
+                              triggerStatus[resident.residentId] ===
+                                "loading" ||
+                              triggerStatus[resident.residentId] === "success"
+                            }
+                            className={`text-sm px-3 py-1 rounded transition-colors ${
+                              triggerStatus[resident.residentId] === "success"
+                                ? "bg-green-100 text-green-700"
+                                : triggerStatus[resident.residentId] === "error"
+                                  ? "bg-red-100 text-red-700"
+                                  : "text-indigo-600 hover:bg-indigo-50 border border-transparent hover:border-indigo-200"
+                            }`}
+                          >
+                            {triggerStatus[resident.residentId] === "loading"
+                              ? "Sending..."
+                              : triggerStatus[resident.residentId] === "success"
+                                ? "✓ Sent"
+                                : triggerStatus[resident.residentId] === "error"
+                                  ? "Failed"
+                                  : "Trigger RMS"}
+                          </button>
+                        </td>
+                      </tr>
+
+                      {/* Breakdown Dropdown */}
+                      {expandedResidents.has(resident.residentId) && (
+                        <tr className="bg-gray-50">
+                          {" "}
+                          <td colSpan={6} className="px-6 py-4">
+                            <div className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3">
+                              Risk Signal Breakdown
+                            </div>
+                            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                              <div
+                                className={`p-3 rounded-md border ${
+                                  resident.signals.daysToExpiryDays <= 90
+                                    ? "bg-red-50 border-red-100"
+                                    : resident.signals.daysToExpiryDays <= 180
+                                      ? "bg-yellow-50 border-yellow-100"
+                                      : "bg-green-50 border-green-100"
+                                }`}
+                              >
+                                <div className="text-xs text-gray-500 font-medium">
+                                  Days to Expiry
+                                </div>
+                                <div className="text-sm font-bold mt-1">
+                                  {resident.signals.daysToExpiryDays} days
+                                </div>
+                              </div>
+
+                              <div
+                                className={`p-3 rounded-md border ${
+                                  resident.signals.paymentHistoryDelinquent
+                                    ? "bg-red-50 border-red-100"
+                                    : "bg-green-50 border-green-100"
+                                }`}
+                              >
+                                <div className="text-xs text-gray-500 font-medium">
+                                  Payment History
+                                </div>
+                                <div className="text-sm font-bold mt-1">
+                                  {resident.signals.paymentHistoryDelinquent
+                                    ? "Delinquent"
+                                    : "Clean"}
+                                </div>
+                              </div>
+
+                              <div
+                                className={`p-3 rounded-md border ${
+                                  resident.signals.noRenewalOfferYet
+                                    ? "bg-red-50 border-red-100"
+                                    : "bg-green-50 border-green-100"
+                                }`}
+                              >
+                                <div className="text-xs text-gray-500 font-medium">
+                                  Renewal Offer
+                                </div>
+                                <div className="text-sm font-bold mt-1">
+                                  {resident.signals.noRenewalOfferYet
+                                    ? "Not Sent"
+                                    : "Sent"}
+                                </div>
+                              </div>
+
+                              <div
+                                className={`p-3 rounded-md border ${
+                                  resident.signals.rentGrowthAboveMarket
+                                    ? "bg-red-50 border-red-100"
+                                    : "bg-green-50 border-green-100"
+                                }`}
+                              >
+                                <div className="text-xs text-gray-500 font-medium">
+                                  Rent vs. Market
+                                </div>
+                                <div className="text-sm font-bold mt-1">
+                                  {resident.signals.rentGrowthAboveMarket
+                                    ? "Above Market"
+                                    : "At/Below Market"}
+                                </div>
+                              </div>
+                            </div>
+                          </td>
+                        </tr>
+                      )}
+                    </Fragment>
+                  ))
+                )}
               </tbody>
             </table>
           </div>
