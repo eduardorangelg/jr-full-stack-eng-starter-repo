@@ -49,15 +49,31 @@ This is the starter repo for the Jr. Full Stack Engineer take-home test.
   - **Frontend:** Decomposed the dashboard into a `components/renewal-risk/` directory.
   - **Backend:** Implemented a Service-Route pattern. Business logic is isolated in `services/riskService.ts` and routes are organized in the `routes/` directory.
 - **Unit Number vs. Unit ID:** The spec's example JSON response includes unitId (the internal database key). However, the UI requirement explicitly lists "Unit number" as a required table column, and these are different fields. I added unitNumber to the API response alongside unitId so the dashboard displays a human-readable label (e.g., "Unit 101") instead of an internal UUID. The unitId is retained in the response as it would be needed for future features like linking to a unit detail page.
+- **Seed Data:** While checking the project with Claude, I discovered that the comment in seed.sql for Scenario 7 (Priya Patel) labels her as "Medium Risk," but applying the scoring formula to her actual data produces a score of 90 (HIGH). She is delinquent, has 60 days to expiry, and a 12% rent gap — triggering the delinquent+expiry interaction bonus on top of the base score.
 
-## 5. Improvements with More Time
+## 5. Manual Testing
+
+- **Risk Scoring Formula Validation:**
+  - Verified the scoring formula logic matches the spec by tracing through the calculation manually for several seed residents.
+  - **Verified edge cases:** Score capping at 100 for residents who hit multiple interaction scores, and floor at 0 for cleanest-profile residents.
+  - Confirmed all three interaction scores were applying correctly by checking residents who had multiple scores (delinquent + no offer + expiry ≤ 60 days).
+- **API Validation:**
+  - Verified the `/calculate` endpoint returns a 404 when no active residents are found for the given propertyId.
+  - Confirmed the response payload structure matches the spec's expected JSON format.
+  - Checked that `totalResidents` always equals the length of the `residents` array.
+- **Frontend Validation:**
+  - Verified loading and error states render correctly by temporarily pointing the frontend at an invalid API URL.
+  - Confirmed `e.stopPropagation()` prevents row expansion when clicking "Trigger RMS".
+  - Verified the "✓ Sent" success state, "Sending..." and "Failed" error state both render correctly on the Trigger RMS button.
+
+## 6. Improvements with More Time
 
 - **Batch Triggering:** Add a feature to trigger renewal events for all "High Risk" residents at once.
 - **Historical Tracking:** Add a chart to show risk score trends over time based on previous calculation snapshots.
 - **Pagination:** Implement server-side pagination for properties with hundreds of residents.
 - **Unit & Integration Testing:** Implement a testing suite (e.g., Vitest/Jest) specifically for the scoring formula logic and API contract validation.
 
-## 6. AI-Assisted Development
+## 7. AI-Assisted Development
 
 This project was developed using a collaborative AI workflow involving **Gemini CLI**, **Gemini 3 Pro Chatbot** and **Claude Sonnet 4.6 Chatbot**.
 
@@ -75,6 +91,7 @@ This project was developed using a collaborative AI workflow involving **Gemini 
 - **Claude Sonnet 4.6 Chatbot:**
   - **Code Review:** Reviewed the frontend and backend code against the spec and identified a spec violation where the Unit column was displaying a truncated internal UUID instead of the required unit number.
   - **Unit Number Issue:** Guided the fix by adding unitNumber to the `ResidentRisk` interface, the risk service response, and the ResidentRow component. Correcting the display from a truncated UUID to a human-readable "Unit 101" format.
+  - **Discrepancy Detection:** Checked the `seed.sql` structure and identified that Priya Patel's seed comment incorrectly labeled her as Medium Risk when the formula produces a score of 90 (HIGH).
 
 - **Human Refinement:**
   - Verified all risk calculation mathematical formulas against the business spec.
@@ -98,14 +115,14 @@ Started at 9:30 AM CST and finished at 11:30 AM CST
 ## **Extra Time Log**
 
 I was given extra time for cleaning the code and making it more modular.<br><br>
-Started at 11:45 AM CST and finished at 12:45 AM CST
+Started at 11:45 AM CST and finished at 1:00 PM CST
 
 - **Frontend Modular Refactor:** 15 minutes
 - **Backend Modular Refactor:** 15 minutes
 - **Updating the README:** 15 minutes
-- **Final Testing:** 15 minutes
+- **Final Testing:** 30 minutes
 
-- **Total Time:** **1 hour**
+- **Total Time:** **1 hour and 15 minutes**
 
 ---
 
