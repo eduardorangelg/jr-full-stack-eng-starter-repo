@@ -43,7 +43,9 @@ This is the starter repo for the Jr. Full Stack Engineer take-home test.
 - **Database Transactions:** In the backend, I used a database transaction to ensure that the batch calculation and saving of risk scores are atomic. If any insert fails, none of the results are committed.
 - **Real-time Response:** The `calculate` endpoint both calculates/saves and returns the full dataset immediately. This simplifies the frontend logic by avoiding a separate GET call after calculation.
 - **UX/UI Priority:** For the "Nice to Have" features, I focused on making the risk signals visually distinct (color-coding badges) within the expanded row to help property managers quickly digest the "why" behind a score.
-- **Event Propagation:** Implemented `e.stopPropagation()` on action buttons to prevent the row from expanding/collapsing when clicking "Trigger RMS".
+
+* **Event Propagation:** Implemented `e.stopPropagation()` on action buttons to prevent the row from expanding/collapsing when clicking "Trigger RMS".
+* **Modular Architecture:** Divided the `RenewalRiskPage.tsx` into a modular structure. Created a `components/renewal-risk/` directory to house sub-components.
 
 ### 5. Improvements with More Time
 
@@ -60,6 +62,7 @@ This project was developed using a collaborative AI workflow involving **Gemini 
 
 - **Gemini CLI Contributions:**
   - **Feature Implementation:** Provided the implementation for the "Nice to Have" frontend features, including the Filter by Risk Tier and the Expandable Signal Breakdown Rows.
+  - **Frontend Modularization:** Refactored the monolithic `RenewalRiskPage.tsx` into a modular structure. Created a `components/renewal-risk/` directory to house sub-components (`RiskTable`, `ResidentRow`, etc.), which reduced the main page size from 500+ lines to under 200 lines and improved code reusability.
   - **Documentation:** Created the initial draft for the README documentation and submission structure to ensure all rubric requirements were addressed.
 
 - **Gemini 3 Pro Contributions:**
@@ -81,6 +84,15 @@ Started at 9:30 AM CST and finished at 11:30 AM CST
 - **Feature Polish (Filtering, Sorting, Nav):** 15 minutes
 - **Documentation & Final Testing:** 15 minutes
 - **Total Time:** **2 Hours**
+
+### **Extra Time Log**
+
+I was given extra time for cleaning the code and making it more modular.<br><br>
+Started at 11:45 AM CST
+
+- **Frontend Development Component Refactor:** 15 minutes
+
+- **Total Time:** **Not known yet**
 
 ## Quick Start
 
