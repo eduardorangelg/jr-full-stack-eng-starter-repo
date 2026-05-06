@@ -237,12 +237,50 @@ app.post(
 );
 
 // =============================================================
-// TODO (Bonus): Add your trigger renewal event endpoint here
-//
+// Bonus: Trigger Renewal Event Endpoint
 // POST /api/v1/properties/:propertyId/residents/:residentId/trigger-renewal
-//
-// This should POST to the mock RMS endpoint (MOCK_RMS_URL env var).
 // =============================================================
+app.post(
+  "/api/v1/properties/:propertyId/residents/:residentId/trigger-renewal",
+  async (req, res) => {
+    const { propertyId, residentId } = req.params;
+    const riskData = req.body;
+
+    // Grab the mock RMS URL from the environment (provided in docker-compose)
+    const rmsUrl = process.env.MOCK_RMS_URL || "http://mock-rms:3001/webhook";
+
+    try {
+      // 1. Construct the exact payload requested in the requirements
+      const payload = {
+        event: "renewal.risk_flagged",
+        eventId: `evt-${Date.now()}`, // Simple unique ID
+        timestamp: new Date().toISOString(),
+        propertyId,
+        residentId,
+        data: riskData,
+      };
+
+      // 2. POST the payload to the Mock RMS server
+      const rmsResponse = await fetch(rmsUrl, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+
+      if (!rmsResponse.ok) {
+        throw new Error(
+          `Mock RMS responded with status: ${rmsResponse.status}`,
+        );
+      }
+
+      // 3. Tell the frontend it worked
+      res.status(200).json({ success: true, message: "Event sent to RMS" });
+    } catch (error) {
+      console.error("RMS Webhook Error:", error);
+      res.status(500).json({ error: "Failed to trigger RMS webhook" });
+    }
+  },
+);
 
 app.listen(PORT, () => {
   console.log(`✓ Backend running on http://localhost:${PORT}`);
