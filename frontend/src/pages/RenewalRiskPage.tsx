@@ -40,6 +40,9 @@ function RenewalRiskPage() {
   const [data, setData] = useState<CalculateRiskResponse | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [triggerStatus, setTriggerStatus] = useState<
+    Record<string, "loading" | "success" | "error">
+  >({});
 
   // --- Actions ---
   const calculateRisk = async () => {
@@ -69,6 +72,44 @@ function RenewalRiskPage() {
       setError(err.message || "An unexpected error occurred.");
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  // Bonus Task: Trigger renewal webhook
+  const triggerRenewalEvent = async (resident: ResidentRisk) => {
+    setTriggerStatus((prev) => ({ ...prev, [resident.residentId]: "loading" }));
+
+    try {
+      const response = await fetch(
+        `${API_URL}/api/v1/properties/${propertyId}/residents/${resident.residentId}/trigger-renewal`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            riskScore: resident.riskScore,
+            riskTier: resident.riskTier,
+            daysToExpiry: resident.daysToExpiry,
+          }),
+        },
+      );
+
+      if (!response.ok) throw new Error("Trigger failed");
+
+      setTriggerStatus((prev) => ({
+        ...prev,
+        [resident.residentId]: "success",
+      }));
+
+      // Reset success message after 3 seconds
+      setTimeout(() => {
+        setTriggerStatus((prev) => {
+          const newState = { ...prev };
+          delete newState[resident.residentId];
+          return newState;
+        });
+      }, 3000);
+    } catch (err) {
+      setTriggerStatus((prev) => ({ ...prev, [resident.residentId]: "error" }));
     }
   };
 
@@ -196,6 +237,9 @@ function RenewalRiskPage() {
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Risk Tier
                   </th>
+                  <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Actions
+                  </th>
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
@@ -223,6 +267,30 @@ function RenewalRiskPage() {
                       >
                         {resident.riskTier.toUpperCase()}
                       </span>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                      <button
+                        onClick={() => triggerRenewalEvent(resident)}
+                        disabled={
+                          triggerStatus[resident.residentId] === "loading" ||
+                          triggerStatus[resident.residentId] === "success"
+                        }
+                        className={`text-sm px-3 py-1 rounded transition-colors ${
+                          triggerStatus[resident.residentId] === "success"
+                            ? "bg-green-100 text-green-700"
+                            : triggerStatus[resident.residentId] === "error"
+                              ? "bg-red-100 text-red-700"
+                              : "text-indigo-600 hover:bg-indigo-50 border border-transparent hover:border-indigo-200"
+                        }`}
+                      >
+                        {triggerStatus[resident.residentId] === "loading"
+                          ? "Sending..."
+                          : triggerStatus[resident.residentId] === "success"
+                            ? "✓ Sent"
+                            : triggerStatus[resident.residentId] === "error"
+                              ? "Failed"
+                              : "Trigger RMS"}
+                      </button>
                     </td>
                   </tr>
                 ))}
