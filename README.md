@@ -43,18 +43,17 @@ This is the starter repo for the Jr. Full Stack Engineer take-home test.
 - **Database Transactions:** In the backend, I used a database transaction to ensure that the batch calculation and saving of risk scores are atomic. If any insert fails, none of the results are committed.
 - **Real-time Response:** The `calculate` endpoint both calculates/saves and returns the full dataset immediately. This simplifies the frontend logic by avoiding a separate GET call after calculation.
 - **UX/UI Priority:** For the "Nice to Have" features, I focused on making the risk signals visually distinct (color-coding badges) within the expanded row to help property managers quickly digest the "why" behind a score.
-
-* **Event Propagation:** Implemented `e.stopPropagation()` on action buttons to prevent the row from expanding/collapsing when clicking "Trigger RMS".
-* **Modular Architecture:** Divided the `RenewalRiskPage.tsx` into a modular structure. Created a `components/renewal-risk/` directory to house sub-components.
+- **Event Propagation:** Implemented `e.stopPropagation()` on action buttons to prevent the row from expanding/collapsing when clicking "Trigger RMS".
+- **Modular Architecture:** Refactored both frontend and backend for high maintainability.
+  - **Frontend:** Decomposed the dashboard into a `components/renewal-risk/` directory.
+  - **Backend:** Implemented a Service-Route pattern. Business logic is isolated in `services/riskService.ts` and routes are organized in the `routes/` directory.
 
 ### 5. Improvements with More Time
 
 - **Batch Triggering:** Add a feature to trigger renewal events for all "High Risk" residents at once.
-- **Historical Tracking:** Add a chart or "trend" indicator to show if a resident's risk score is increasing or decreasing over time based on previous calculations.
-- **Pagination:** Although the current dataset is small, I would implement server-side pagination for properties with hundreds of residents.
-- **Robust Error Handling:** Add more granular error messages on the frontend.
-- **Modular Architecture & Refactoring:** I would move the scoring logic into a dedicated service layer on the backend and extract the dashboard's sub-components (e.g., `RiskTableRow`, `RiskSignalBreakdown`) into separate files. This would improve readability and make the codebase easier for a team to maintain.
-- **Unit & Integration Testing:** I would implement a testing suite using Vitest. Specifically, I’d add unit tests for the scoring formula to ensure edge cases (like score capping at 100) are handled, and integration tests to prevent regression bugs when new features are being developed.
+- **Historical Tracking:** Add a chart to show risk score trends over time based on previous calculation snapshots.
+- **Pagination:** Implement server-side pagination for properties with hundreds of residents.
+- **Unit & Integration Testing:** Implement a testing suite (e.g., Vitest/Jest) specifically for the scoring formula logic and API contract validation.
 
 ## 6. AI-Assisted Development
 
@@ -62,7 +61,8 @@ This project was developed using a collaborative AI workflow involving **Gemini 
 
 - **Gemini CLI Contributions:**
   - **Feature Implementation:** Provided the implementation for the "Nice to Have" frontend features, including the Filter by Risk Tier and the Expandable Signal Breakdown Rows.
-  - **Frontend Modularization:** Refactored the monolithic `RenewalRiskPage.tsx` into a modular structure. Created a `components/renewal-risk/` directory to house sub-components (`RiskTable`, `ResidentRow`, etc.), which reduced the main page size from 500+ lines to under 200 lines and improved code reusability.
+  - **Frontend Modularization:** Refactored the monolithic `RenewalRiskPage.tsx` into a modular structure. Created a `components/renewal-risk/` directory to house sub-components (`RiskTable.tsx`, `ResidentRow.tsx`, etc.), which reduced the main page size from 500 lines to 200 lines and improved code reusability.
+  - **Backend Modularization:** Refactored the monolithic `index.ts` into a modular structure by implementing the Service-Route pattern. Created `/routes` and `/services` directories to house the routes (`propertyRoutes.ts`, `riskRoutes.ts`) and the services (`riskService.ts`), which reduced the size from 300 lines to 30 lines and improved code reusability.
   - **Documentation:** Created the initial draft for the README documentation and submission structure to ensure all rubric requirements were addressed.
 
 - **Gemini 3 Pro Contributions:**
@@ -71,6 +71,30 @@ This project was developed using a collaborative AI workflow involving **Gemini 
   - **Bug Resolution:** Diagnosed a PostgreSQL date extraction error and provided the fix using native date subtraction.
 
 - **Human Refinement:** Verified all risk calculation mathematical formulas against the business spec and ensured the Tailwind styling remained functional, clear, and professional.
+
+---
+
+### **Time Log**
+
+Started at 9:30 AM CST and finished at 11:30 AM CST
+
+- **Schema & Spec Review:** 15 minutes
+- **Backend Development (API & SQL Logic):** 30 minutes
+- **Frontend Development (Dashboard & UI Logic):** 45 minutes
+- **Feature Polish (Filtering, Sorting, Nav):** 15 minutes
+- **Documentation & Final Testing:** 15 minutes
+- **Total Time:** **2 Hours**
+
+### **Extra Time Log**
+
+I was given extra time for cleaning the code and making it more modular.<br><br>
+Started at 11:45 AM CST
+
+- **Frontend Modular Refactor:** 15 minutes
+- **Backend Modular Refactor:** 15 minutes
+- **Updating the README:** 15 minutes
+
+- **Total Time:** **Not known yet**
 
 ---
 
