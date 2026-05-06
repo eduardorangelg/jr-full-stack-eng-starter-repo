@@ -15,7 +15,7 @@ This is the starter repo for the Jr. Full Stack Engineer take-home test.
 - **Frontend:** React/Vite dashboard accessible on `http://localhost:5173`.
 - **Mock RMS:** Webhook service accessible on `http://localhost:3001`.
 
-### 2. How to Use
+## 2. How to Use
 
 1.  **Navigate to the Dashboard:** Open [http://localhost:5173](http://localhost:5173) and click on "Park Meadows Apartments".
 2.  **Calculate Risk:** Click the **"Calculate Risk Scores"** button at the top right. This triggers the backend scoring engine and saves results to the database.
@@ -37,8 +37,9 @@ This is the starter repo for the Jr. Full Stack Engineer take-home test.
 - **State Management:** Managed loading, error, and partial success states (per-row RMS triggers) using React hooks.
 - **Navigation:** Added a back-navigation link to the main properties list to resolve a "dead-end" UX issue in the starter repo.
 - **UX Features:** Implemented expandable rows to provide transparency into the "why" behind each score, showing the specific signals (Days To Expiry, Payment History, Renewal Offer, Rent vs. Market) that contributed to the risk tier.
+- **Unit Number Display:** Added the actual unit number to the expected JSON. The backend now includes `unitNumber` in the response payload and the UI renders it as the format a property manager would recognize.
 
-### 4. Decisions & Assumptions
+## 4. Decisions & Assumptions
 
 - **Database Transactions:** In the backend, I used a database transaction to ensure that the batch calculation and saving of risk scores are atomic. If any insert fails, none of the results are committed.
 - **Real-time Response:** The `calculate` endpoint both calculates/saves and returns the full dataset immediately. This simplifies the frontend logic by avoiding a separate GET call after calculation.
@@ -47,8 +48,9 @@ This is the starter repo for the Jr. Full Stack Engineer take-home test.
 - **Modular Architecture:** Refactored both frontend and backend for high maintainability.
   - **Frontend:** Decomposed the dashboard into a `components/renewal-risk/` directory.
   - **Backend:** Implemented a Service-Route pattern. Business logic is isolated in `services/riskService.ts` and routes are organized in the `routes/` directory.
+- **Unit Number vs. Unit ID:** The spec's example JSON response includes unitId (the internal database key). However, the UI requirement explicitly lists "Unit number" as a required table column, and these are different fields. I added unitNumber to the API response alongside unitId so the dashboard displays a human-readable label (e.g., "Unit 101") instead of an internal UUID. The unitId is retained in the response as it would be needed for future features like linking to a unit detail page.
 
-### 5. Improvements with More Time
+## 5. Improvements with More Time
 
 - **Batch Triggering:** Add a feature to trigger renewal events for all "High Risk" residents at once.
 - **Historical Tracking:** Add a chart to show risk score trends over time based on previous calculation snapshots.
@@ -57,7 +59,7 @@ This is the starter repo for the Jr. Full Stack Engineer take-home test.
 
 ## 6. AI-Assisted Development
 
-This project was developed using a collaborative AI workflow involving **Gemini CLI** and **Gemini 3 Pro**.
+This project was developed using a collaborative AI workflow involving **Gemini CLI**, **Gemini 3 Pro Chatbot** and **Claude Sonnet 4.6 Chatbot**.
 
 - **Gemini CLI Contributions:**
   - **Feature Implementation:** Provided the implementation for the "Nice to Have" frontend features, including the Filter by Risk Tier and the Expandable Signal Breakdown Rows.
@@ -65,16 +67,24 @@ This project was developed using a collaborative AI workflow involving **Gemini 
   - **Backend Modularization:** Refactored the monolithic `index.ts` into a modular structure by implementing the Service-Route pattern. Created `/routes` and `/services` directories to house the routes (`propertyRoutes.ts`, `riskRoutes.ts`) and the services (`riskService.ts`), which reduced the size from 300 lines to 30 lines and improved code reusability.
   - **Documentation:** Created the initial draft for the README documentation and submission structure to ensure all rubric requirements were addressed.
 
-- **Gemini 3 Pro Contributions:**
+- **Gemini 3 Pro Chatbot Contributions:**
   - **Backend & SQL Logic:** Architected the high-performance SQL query for risk signals, ensuring strict adherence to the weighted formula and compounding interaction bonuses in a single database trip.
   - **Frontend Logic:** Built the core `RenewalRiskPage` React component from scratch, including state management for calculations, error handling, and the Bonus Task (RMS integration).
   - **Bug Resolution:** Diagnosed a PostgreSQL date extraction error and provided the fix using native date subtraction.
 
-- **Human Refinement:** Verified all risk calculation mathematical formulas against the business spec and ensured the Tailwind styling remained functional, clear, and professional.
+- **Claude Sonnet 4.6 Chatbot:**
+  - **Code Review:** Reviewed the frontend and backend code against the spec and identified a spec violation where the Unit column was displaying a truncated internal UUID instead of the required unit number.
+  - **Unit Number Issue:** Guided the fix by adding unitNumber to the `ResidentRisk` interface, the risk service response, and the ResidentRow component. Correcting the display from a truncated UUID to a human-readable "Unit 101" format.
 
----
+- **Human Refinement:**
+  - Verified all risk calculation mathematical formulas against the business spec.
+  - Ensured the Tailwind styling remained functional, clear, and professional.
+  - Identified the need for modular refactoring after initial implementation and directed the AI-assisted refactor of both frontend and backend.
+  - Validated all AI-generated code against the spec requirements.
+  - Made all architectural decisions including the Service-Route pattern on the backend and the component decomposition strategy on the frontend.
+  - Documented all technical decisions and ambiguities (including the unitNumber API contract deviation) in the README after the AI initial draft.
 
-### **Time Log**
+## **Time Log**
 
 Started at 9:30 AM CST and finished at 11:30 AM CST
 
@@ -85,38 +95,19 @@ Started at 9:30 AM CST and finished at 11:30 AM CST
 - **Documentation & Final Testing:** 15 minutes
 - **Total Time:** **2 Hours**
 
-### **Extra Time Log**
+## **Extra Time Log**
 
 I was given extra time for cleaning the code and making it more modular.<br><br>
-Started at 11:45 AM CST
+Started at 11:45 AM CST and finished at 12:45 AM CST
 
 - **Frontend Modular Refactor:** 15 minutes
 - **Backend Modular Refactor:** 15 minutes
 - **Updating the README:** 15 minutes
+- **Final Testing:** 15 minutes
 
-- **Total Time:** **Not known yet**
+- **Total Time:** **1 hour**
 
 ---
-
-### **Time Log**
-
-Started at 9:30 AM CST and finished at 11:30 AM CST
-
-- **Schema & Spec Review:** 15 minutes
-- **Backend Development (API & SQL Logic):** 30 minutes
-- **Frontend Development (Dashboard & UI Logic):** 45 minutes
-- **Feature Polish (Filtering, Sorting, Nav):** 15 minutes
-- **Documentation & Final Testing:** 15 minutes
-- **Total Time:** **2 Hours**
-
-### **Extra Time Log**
-
-I was given extra time for cleaning the code and making it more modular.<br><br>
-Started at 11:45 AM CST
-
-- **Frontend Development Component Refactor:** 15 minutes
-
-- **Total Time:** **Not known yet**
 
 ## Quick Start
 

@@ -9,6 +9,7 @@ export interface ResidentRisk {
   residentId: string;
   name: string;
   unitId: string;
+  unitNumber: string;
   riskScore: number;
   riskTier: "high" | "medium" | "low";
   daysToExpiry: number;

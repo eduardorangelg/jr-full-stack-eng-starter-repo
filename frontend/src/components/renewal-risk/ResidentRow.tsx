@@ -45,13 +45,17 @@ export const ResidentRow: React.FC<ResidentRowProps> = ({
           </div>
         </td>
         <td className="px-6 py-4 whitespace-nowrap text-gray-500">
-          {resident.unitId.substring(0, 8)}...
+          <span title={`Unit ID: ${resident.unitId}`}>
+            Unit {resident.unitNumber}
+          </span>
         </td>
         <td className="px-6 py-4 whitespace-nowrap text-gray-500">
           {resident.daysToExpiry} days
         </td>
         <td className="px-6 py-4 whitespace-nowrap">
-          <span className="text-gray-900 font-medium">{resident.riskScore}</span>
+          <span className="text-gray-900 font-medium">
+            {resident.riskScore}
+          </span>
           <span className="text-gray-400 text-xs ml-1">/ 100</span>
         </td>
         <td className="px-6 py-4 whitespace-nowrap">
@@ -63,7 +67,9 @@ export const ResidentRow: React.FC<ResidentRowProps> = ({
               e.stopPropagation();
               onTriggerRenewal(resident);
             }}
-            disabled={triggerStatus === "loading" || triggerStatus === "success"}
+            disabled={
+              triggerStatus === "loading" || triggerStatus === "success"
+            }
             className={`text-sm px-3 py-1 rounded transition-colors ${
               triggerStatus === "success"
                 ? "bg-green-100 text-green-700"

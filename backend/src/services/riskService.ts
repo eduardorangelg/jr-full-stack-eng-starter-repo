@@ -114,6 +114,7 @@ export const riskService = {
           residentId: row.resident_id,
           name: `${row.first_name} ${row.last_name}`,
           unitId: row.unit_id,
+          unitNumber: row.unit_number,
           riskScore: finalScore,
           riskTier: riskTier,
           daysToExpiry: daysToExpiry,
